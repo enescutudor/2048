@@ -1,8 +1,15 @@
 #include <curses.h>
 #include <time.h>
 #include <stdlib.h>
+
 #define ENTER 10
 #define FOREVER 1
+#define KEYBOARD 0
+#define S_TO_WAIT 	15
+#define MILIS_TO_WAIT 0
+#define SELECT_EVENT		1
+#define SELECT_NO_EVENT		0
+
 int a[5][5],score;
 int check2048()
 {
@@ -257,19 +264,19 @@ void print_table()
 		{
 			print_square(i,j,a[i][j]);
 		}
+	refresh();
 }
 int main() 
 {       
 	int actiune,continuare,pozitie=1,res=0;
 	int nfds, sel;
-	int KEYBOARD=1;
 	fd_set read_descriptors;
 	struct timeval timeout;
 	nfds = 1;
 	FD_ZERO(&read_descriptors);
 	FD_SET(KEYBOARD, &read_descriptors);
-
-
+	timeout.tv_sec = S_TO_WAIT;
+	timeout.tv_usec = MILIS_TO_WAIT;
 	continuare=1;
 	initscr();
 	cbreak();
@@ -315,37 +322,63 @@ int main()
 				print_table();
 				mvprintw(0,24,"SCORE:");
 				mvprintw(1,24,"%d",score);
-				mvprintw(28,2,"USE THE ARROW KEYS TO MOVE THE TILES");
-				mvprintw(29,2,"PRESS Q TO EXIT THE GAME (YOU'LL BE ABLE TO RESUME IT, IF YOU WANT)");
+				mvprintw(23,2,"USE THE ARROW KEYS TO MOVE THE TILES");
+				mvprintw(24,2,"PRESS Q TO EXIT THE GAME (YOU'LL BE ABLE TO RESUME IT, IF YOU WANT)");
+				refresh();
 				do
 				{
 					int directie,aux,auxm=0;
-					directie=getch();
-					if(directie==KEY_DOWN)
-						miscare_jos(1,&aux,&auxm);
-					else
-						if(directie==KEY_UP)
-							miscare_sus(1,&aux,&auxm);
-						else
-							if(directie==KEY_LEFT)
-								miscare_stanga(1,&aux,&auxm);
+					int aux1,aux2,aux3,aux4,miscari1,miscari2,miscari3,miscari4;
+					sel=select(nfds, &read_descriptors, NULL, NULL, &timeout);
+					switch(sel)
+					{
+						case SELECT_EVENT:
+							directie=getch();
+							if(directie==KEY_DOWN)
+								miscare_jos(1,&aux,&auxm);
 							else
-								if(directie==KEY_RIGHT)
-									miscare_dreapta(1,&aux,&auxm);
-								else	
-									if(directie==113 || directie==81)
-									{
-										res=1;
-										break;
-									}
+								if(directie==KEY_UP)
+									miscare_sus(1,&aux,&auxm);
+								else
+									if(directie==KEY_LEFT)
+										miscare_stanga(1,&aux,&auxm);
 									else
-										aux=0;
+										if(directie==KEY_RIGHT)
+											miscare_dreapta(1,&aux,&auxm);
+										else	
+											if(directie==113 || directie==81)
+											{
+												res=1;
+												goto Continue1;
+											}
+											else
+												aux=0;
+							break;
+						case SELECT_NO_EVENT:
+							miscari1=0;miscari2=0;miscari3=0;miscari4=0;
+							miscare_jos(0,&aux1,&miscari1);
+							miscare_sus(0,&aux2,&miscari2);
+							miscare_stanga(0,&aux3,&miscari3);
+							miscare_dreapta(0,&aux4,&miscari4);
+							if(aux1==1 && miscari1>=miscari2 && miscari1>=miscari3 && miscari1>=miscari4)
+								miscare_jos(1,&aux,&miscari1);
+							else
+								if(aux2==1 && miscari2>=miscari1 && miscari2>=miscari3 && miscari2>=miscari4)
+									miscare_sus(1,&aux,&miscari2);
+								else
+									if(aux3==1 && miscari3>=miscari1 && miscari3>=miscari2 && miscari3>=miscari4)
+										miscare_stanga(1,&aux,&miscari3);
+									else
+										if(aux4==1 && miscari4>=miscari1 && miscari4>=miscari2 && miscari4>=miscari3)
+											miscare_dreapta(1,&aux,&miscari4);
+							break;
+					}
 					if(aux==1)
 						generare();
 					print_table();
 					if(check2048()==1)
 					{
-						mvprintw(26,2,"CONGRATULATIONS, YOU WON!");
+						mvprintw(21,2,"CONGRATULATIONS, YOU WON!");
 						refresh();
 						stadiu=0;
 						res=0;
@@ -362,7 +395,7 @@ int main()
 						miscare_dreapta(0,&aux4,&auxm);
 						if(aux1+aux2+aux3+aux4==0)
 							{
-								mvprintw(26,2,"TOUGH LUCK, YOU ARE OUT OF MOVES!");
+								mvprintw(21,2,"TOUGH LUCK, YOU ARE OUT OF MOVES!");
 								refresh();
 								stadiu=0;
 								res=0;
@@ -370,10 +403,14 @@ int main()
 								getch();
 							}
 					}
+					FD_SET(KEYBOARD, &read_descriptors);
+					timeout.tv_sec = S_TO_WAIT;
+					timeout.tv_usec = MILIS_TO_WAIT;
 					mvprintw(1,24,"%d",score);
 					refresh();
 				}
 				while(stadiu==1);
+				Continue1: ;
 				clear();
 				mvprintw(pozitie,1,"-->");
 				mvprintw(1,4,"New Game");
@@ -390,37 +427,63 @@ int main()
 				print_table();
 				mvprintw(0,24,"SCORE:");
 				mvprintw(1,24,"%d",score);
-				mvprintw(28,2,"USE THE ARROW KEYS TO MOVE THE TILES");
-				mvprintw(29,2,"PRESS Q TO EXIT THE GAME (YOU'LL BE ABLE TO RESUME IT, IF YOU WANT)");
+				mvprintw(23,2,"USE THE ARROW KEYS TO MOVE THE TILES");
+				mvprintw(24,2,"PRESS Q TO EXIT THE GAME (YOU'LL BE ABLE TO RESUME IT, IF YOU WANT)");
+				refresh();
 				do
 				{
 					int directie,aux,auxm=0;
-					directie=getch();
-					if(directie==KEY_DOWN)
-						miscare_jos(1,&aux,&auxm);
-					else
-						if(directie==KEY_UP)
-							miscare_sus(1,&aux,&auxm);
-						else
-							if(directie==KEY_LEFT)
-								miscare_stanga(1,&aux,&auxm);
+					int aux1,aux2,aux3,aux4,miscari1,miscari2,miscari3,miscari4;
+					sel=select(nfds, &read_descriptors, NULL, NULL, &timeout);
+					switch(sel)
+					{
+						case SELECT_EVENT:
+							directie=getch();
+							if(directie==KEY_DOWN)
+								miscare_jos(1,&aux,&auxm);
 							else
-								if(directie==KEY_RIGHT)
-									miscare_dreapta(1,&aux,&auxm);
-								else	
-									if(directie==113 || directie==81)
-									{
-										res=1;
-										break;
-									}
+								if(directie==KEY_UP)
+									miscare_sus(1,&aux,&auxm);
+								else
+									if(directie==KEY_LEFT)
+										miscare_stanga(1,&aux,&auxm);
 									else
-										aux=0;
+										if(directie==KEY_RIGHT)
+											miscare_dreapta(1,&aux,&auxm);
+										else	
+											if(directie==113 || directie==81)
+											{
+												res=1;
+												goto Continue2;
+											}
+											else
+												aux=0;
+							break;
+						case SELECT_NO_EVENT:
+							miscari1=0;miscari2=0;miscari3=0;miscari4=0;
+							miscare_jos(0,&aux1,&miscari1);
+							miscare_sus(0,&aux2,&miscari2);
+							miscare_stanga(0,&aux3,&miscari3);
+							miscare_dreapta(0,&aux4,&miscari4);
+							if(aux1==1 && miscari1>=miscari2 && miscari1>=miscari3 && miscari1>=miscari4)
+								miscare_jos(1,&aux,&miscari1);
+							else
+								if(aux2==1 && miscari2>=miscari1 && miscari2>=miscari3 && miscari2>=miscari4)
+									miscare_sus(1,&aux,&miscari2);
+								else
+									if(aux3==1 && miscari3>=miscari1 && miscari3>=miscari2 && miscari3>=miscari4)
+										miscare_stanga(1,&aux,&miscari3);
+									else
+										if(aux4==1 && miscari4>=miscari1 && miscari4>=miscari2 && miscari4>=miscari3)
+											miscare_dreapta(1,&aux,&miscari4);
+							break;
+					}
 					if(aux==1)
 						generare();
 					print_table();
 					if(check2048()==1)
 					{
-						mvprintw(26,2,"CONGRATULATIONS, YOU WON!");
+						mvprintw(21,2,"CONGRATULATIONS, YOU WON!");
 						refresh();
 						stadiu=0;
 						res=0;
@@ -437,7 +500,7 @@ int main()
 						miscare_dreapta(0,&aux4,&auxm);
 						if(aux1+aux2+aux3+aux4==0)
 							{
-								mvprintw(26,2,"TOUGH LUCK, YOU ARE OUT OF MOVES!");
+								mvprintw(21,2,"TOUGH LUCK, YOU ARE OUT OF MOVES!");
 								refresh();
 								stadiu=0;
 								res=0;
@@ -445,10 +508,14 @@ int main()
 								getch();
 							}
 					}
+					FD_SET(KEYBOARD, &read_descriptors);
+					timeout.tv_sec = S_TO_WAIT;
+					timeout.tv_usec = MILIS_TO_WAIT;
 					mvprintw(1,24,"%d",score);
 					refresh();
 				}
 				while(stadiu==1);
+				Continue2: ;
 				clear();
 				mvprintw(pozitie,1,"-->");
 				mvprintw(1,4,"New Game");
