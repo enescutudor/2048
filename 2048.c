@@ -1,16 +1,69 @@
 #include <curses.h>
 #include <time.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define ENTER 10
 #define FOREVER 1
 #define KEYBOARD 0
-#define S_TO_WAIT 	15
+#define S_TO_WAIT 10
 #define MILIS_TO_WAIT 0
 #define SELECT_EVENT		1
 #define SELECT_NO_EVENT		0
 
-int a[5][5],score;
+int a[5][5],score,prev[5][5],prevscore;
+void draw_box(int l, int c, int x, int y)
+{
+	int i;
+	mvaddch(x,y,ACS_ULCORNER);
+	mvaddch(x+l-1,y+c-1,ACS_LRCORNER);
+	mvaddch(x,y+c-1,ACS_URCORNER);
+	mvaddch(x+l-1,y,ACS_LLCORNER);
+	for(i=1;i<c-1;i++)
+		{
+			mvaddch(x,y+i,ACS_HLINE);
+			mvaddch(x+l-1,y+i,ACS_HLINE);
+		}
+	for(i=1;i<l-1;i++)
+	{
+		mvaddch(x+i,y,ACS_VLINE);
+		mvaddch(x+i,y+c-1,ACS_VLINE);
+	}
+}
+void draw_menu(int position,int res)
+{
+	clear();
+	if(res==0)
+	{
+		mvprintw(4,10,"New Game");
+		mvprintw(5,10,"Resume*");
+		mvprintw(6,10,"Quit");
+		mvaddch(3+position,7,ACS_HLINE);
+		mvaddch(3+position,8,ACS_HLINE);
+		mvaddch(3+position,9,ACS_RARROW);
+	}
+	else
+	{
+		mvprintw(4,10,"New Game");
+		mvprintw(5,10,"Resume");
+		mvprintw(6,10,"Quit");
+		mvaddch(3+position,7,ACS_HLINE);
+		mvaddch(3+position,8,ACS_HLINE);
+		mvaddch(3+position,9,ACS_RARROW);
+	}
+	mvaddch(2,12,ACS_HLINE);
+	mvaddch(2,13,ACS_HLINE);
+	mvaddch(2,14,ACS_RARROW);
+	mvaddch(2,40,ACS_LARROW);
+	mvaddch(2,41,ACS_HLINE);
+	mvaddch(2,42,ACS_HLINE);
+	mvprintw(2,15,"WELCOME TO THE GAME 2048!");
+	mvprintw(10,9,"NAVIGATE THE MENU USING THE ARROW KEYS");
+	mvprintw(11,9,"SELECT A MENU BY PRESSING ENTER");
+	mvprintw(12,9,"*=THE MENU IS NOT ACCESSIBLE");
+	draw_box(13,43,1,6);
+	refresh();
+}
 int check2048()
 {
 	int i,j;
@@ -40,6 +93,11 @@ void miscare_sus(int scop, int *rezultat, int *miscari)//scop=1 pentru mutare, 0
 {
 	int copie[5][5];
 	copiere_matrice(copie);
+	if(scop==1)
+		{
+			copiere_matrice(prev);
+			prevscore=score;
+		}
 	int i,locscore=0;
 	for(i=1;i<=4;i++)
 	{
@@ -83,6 +141,11 @@ void miscare_stanga(int scop, int *rezultat, int *miscari)//1 pentru mutare, 0 p
 {
 	int copie[5][5];
 	copiere_matrice(copie);
+	if(scop==1)
+		{
+			copiere_matrice(prev);
+			prevscore=score;
+		}
 	int i,locscore=0;
 	for(i=1;i<=4;i++)
 	{
@@ -127,6 +190,11 @@ void miscare_jos(int scop, int *rezultat, int *miscari)//1 pentru mutare, 0 pent
 {
 	int copie[5][5];
 	copiere_matrice(copie);
+	if(scop==1)
+		{
+			copiere_matrice(prev);
+			prevscore=score;
+		}
 	int i,locscore=0;
 	for(i=1;i<=4;i++)
 	{
@@ -170,6 +238,11 @@ void miscare_dreapta(int scop, int *rezultat, int *miscari)//1 pentru mutare, 0 
 {
 	int copie[5][5];
 	copiere_matrice(copie);
+	if(scop==1)
+		{
+			copiere_matrice(prev);
+			prevscore=score;
+		}
 	int i,locscore=0;
 	for(i=1;i<=4;i++)
 	{
@@ -245,18 +318,139 @@ void generare()
 				}
 			}
 }
+int color_codesv(int val)
+{
+	switch(val)
+	{
+		case 2:return 1;break;
+		case 4:return 2;break;
+		case 8:return 3;break;
+		case 16:return 4;break;
+		case 32:return 5;break;
+		case 64:return 6;break;
+		case 128:return 7;break;
+		case 256:return 8;break;
+		case 512:return 9;break;
+		case 1024:return 10;break;
+		case 2048:return 11;break;
+	}
+	return 12;
+}
 void print_square(int x, int y, int val)
 {
-	mvprintw((x-1)*4,(y-1)*5,"+----+");
-	mvprintw((x)*4,(y-1)*5,"+----+");
-	mvprintw((x-1)*4+1,(y-1)*5,"|    |");
-	mvprintw((x)*4-1,(y-1)*5,"|    |");
-	mvprintw((x-1)*4+2,(y-1)*5,"|    ");
+	int i,xi;
+	xi=color_codesv(val);
+	if(xi!=12)
+		attron(COLOR_PAIR(xi));
+	mvprintw(4*(x-1)+2,5*(y-1)+2,"    ");
+	mvprintw(4*(x-1)+3,5*(y-1)+2,"    ");
+	mvprintw(4*(x-1)+4,5*(y-1)+2,"    ");
 	if(val!=0)
-		mvprintw((x-1)*4+2,(y-1)*5,"|%d",val);
-	mvprintw((x-1)*4+2,(y)*5,"|");
+		mvprintw(4*(x-1)+3,5*(y-1)+2,"%d",val);
+	if(xi!=12)
+		attroff(COLOR_PAIR(xi));
+	for(i=1;i<=4;i++)
+	{
+		mvaddch((x-1)*4+1,(y-1)*5+1+i,ACS_HLINE);
+		mvaddch((x)*4+1,(y-1)*5+1+i,ACS_HLINE);
+	}
+	mvaddch((x-1)*4+1+1,(y-1)*5+1,ACS_VLINE);
+	mvaddch((x-1)*4+1+1,(y-1)*5+1+5,ACS_VLINE);
+	mvaddch((x)*4-1+1,(y-1)*5+1,ACS_VLINE);
+	mvaddch((x)*4-1+1,(y-1)*5+1+5,ACS_VLINE);
+	mvaddch((x-1)*4+2+1,(y-1)*5+1,ACS_VLINE);
+	mvaddch((x-1)*4+2+1,(y)*5+1,ACS_VLINE);
+	if(x==1 && y==1)
+	{
+		mvaddch(4*(x-1)+1,5*(y-1)+1,ACS_ULCORNER);
+		mvaddch(4*(x-1)+1+4,5*(y-1)+1,ACS_LTEE);
+		mvaddch(4*(x-1)+1+4,5*(y-1)+1+5,ACS_PLUS);
+		mvaddch(4*(x-1)+1,5*(y-1)+1+5,ACS_TTEE);
+	}
+	else
+		if(x==1 && y==4)
+		{
+			mvaddch(4*(x-1)+1,5*(y-1)+1,ACS_TTEE);
+			mvaddch(4*(x-1)+1+4,5*(y-1)+1,ACS_PLUS);
+			mvaddch(4*(x-1)+1+4,5*(y-1)+1+5,ACS_RTEE);
+			mvaddch(4*(x-1)+1,5*(y-1)+1+5,ACS_URCORNER);
+		}
+		else
+			if(x==4 && y==1)
+			{
+				mvaddch(4*(x-1)+1,5*(y-1)+1,ACS_LTEE);
+				mvaddch(4*(x-1)+1+4,5*(y-1)+1,ACS_LLCORNER);
+				mvaddch(4*(x-1)+1+4,5*(y-1)+1+5,ACS_BTEE);
+				mvaddch(4*(x-1)+1,5*(y-1)+1+5,ACS_PLUS);
+			}
+			else
+				if(x==4 && y==4)
+				{
+					mvaddch(4*(x-1)+1,5*(y-1)+1,ACS_PLUS);
+					mvaddch(4*(x-1)+1+4,5*(y-1)+1,ACS_BTEE);
+					mvaddch(4*(x-1)+1+4,5*(y-1)+1+5,ACS_LRCORNER);
+					mvaddch(4*(x-1)+1,5*(y-1)+1+5,ACS_RTEE);
+				}
+				else
+					if(x==1)
+					{
+							mvaddch(4*(x-1)+1,5*(y-1)+1+5,ACS_TTEE);
+					}
+					else
+						if(y==1)
+						{
+							mvaddch(4*(x-1)+1+4,5*(y-1)+1,ACS_LTEE);
+						}
+						else
+							if(x==4)
+							{
+								mvaddch(4*(x-1)+1+4,5*(y-1)+1,ACS_BTEE);
+							}
+							else
+								if(y==4)
+								{
+									mvaddch(4*(x-1)+1+4,5*(y-1)+1+5,ACS_RTEE);
+								}
+								else
+								{
+									mvaddch(4*(x-1)+1,5*(y-1)+1,ACS_PLUS);
+									mvaddch(4*(x-1)+1+4,5*(y-1)+1,ACS_PLUS);
+									mvaddch(4*(x-1)+1+4,5*(y-1)+1+5,ACS_PLUS);
+									mvaddch(4*(x-1)+1,5*(y-1)+1+5,ACS_PLUS);
+								}
 }
-void print_table()
+void print_date(int year,int month, int day)
+{
+	char *mon=NULL;
+	mon=malloc(15*sizeof(char));
+	switch(month)
+	{
+		case 1:strcpy(mon,"January");break;
+		case 2:strcpy(mon,"February");break;
+		case 3:strcpy(mon,"March");break;
+		case 4:strcpy(mon,"April");break;
+		case 5:strcpy(mon,"May");break;
+		case 6:strcpy(mon,"June");break;
+		case 7:strcpy(mon,"July");break;
+		case 8:strcpy(mon,"August");break;
+		case 9:strcpy(mon,"September");break;
+		case 10:strcpy(mon,"October");break;
+		case 11:strcpy(mon,"November");break;
+		case 12:strcpy(mon,"December");break;
+	}
+	if(day%10==1 && day!=11)
+		mvprintw(3,35,"%dst of %s, %d",day,mon,year);
+	else
+		if(day%10==2 && day!=12)
+			mvprintw(3,35,"%dnd of %s, %d",day,mon,year);
+		else
+			if(day%10==3 && day!=13)
+				mvprintw(3,35,"%drd of %s, %d",day,mon,year);
+			else
+				mvprintw(3,35,"%dth of %s, %d",day,mon,year);
+	free(mon);
+}
+void print_table(int score)
 {
 	int i,j;
 	for(i=1;i<=4;i++)
@@ -264,10 +458,86 @@ void print_table()
 		{
 			print_square(i,j,a[i][j]);
 		}
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
+	mvprintw(2,35,"DATE:");
+	print_date(tm.tm_year+1900,tm.tm_mon+1,tm.tm_mday);
+	mvprintw(6,35,"TIME:");
+	mvprintw(7,35,"%d:%d",tm.tm_hour,tm.tm_min);
+	draw_box(4,26,1,34);
+	draw_box(4,8,5,34);
+	mvprintw(2,24,"SCORE:");
+	mvprintw(3,24,"%d",score);
+	draw_box(4,9,1,23);
+	draw_box(24,71,0,0);
+	int aux1,aux2,aux3,aux4,aux;
+	miscare_jos(0,&aux1,&aux);
+	miscare_sus(0,&aux2,&aux);
+	miscare_dreapta(0,&aux3,&aux);
+	miscare_stanga(0,&aux4,&aux);
+	mvprintw(6,44,"POSSIBLE MOVES:");
+	if(aux2==1)
+		mvaddch	(7,51,ACS_UARROW);
+	else
+		mvprintw(7,51," ");
+	if(aux1==1)
+		mvprintw(9,51,"v");
+	else
+		mvprintw(9,51," ");
+	if(aux3==1)
+		mvaddch(8,53,ACS_RARROW);
+	else
+		mvprintw(8,53," ");
+	if(aux4==1)
+		mvaddch(8,49,ACS_LARROW);
+	else
+		mvprintw(8,49," ");
+	if(aux1+aux2+aux3+aux4==0)
+		mvprintw(8,51,"X");
+	else
+		mvprintw(8,51," ");
+	draw_box(6,17,5,43);
+	mvaddch(12,26-1,ACS_ULCORNER);
+	mvaddch(12,27-1,ACS_HLINE);
+	mvaddch(12,28-1,ACS_URCORNER);
+	mvaddch(13,28-1,ACS_VLINE);
+	mvaddch(14,28-1,ACS_LRCORNER);
+	mvaddch(14,27-1,ACS_HLINE);
+	mvaddch(14,26-1,ACS_ULCORNER);
+	mvaddch(15,26-1,ACS_VLINE);
+	mvaddch(16,26-1,ACS_LLCORNER);
+	mvaddch(16,27-1,ACS_HLINE);
+	mvaddch(16,28-1,ACS_LRCORNER);
+	draw_box(5,3,12,30-1);
+	mvaddch(12,34-1,ACS_TTEE);
+	mvaddch(13,34-1,ACS_VLINE);
+	mvaddch(14,34-1,ACS_LLCORNER);
+	mvaddch(14,35-1,ACS_HLINE);
+	mvaddch(14,36-1,ACS_PLUS);
+	mvaddch(15,36-1,ACS_VLINE);
+	mvaddch(16,36-1,ACS_BTEE);
+	draw_box(3,3,12,38-1);
+	draw_box(3,3,14,38-1);
+	mvaddch(14,38-1,ACS_LTEE);
+	mvaddch(14,40-1,ACS_RTEE);
+	attron(A_BOLD);
+	mvprintw(12,41,"2+2=4");
+	mvprintw(13,41,"4+4=8");
+	mvprintw(14,41,"8+8=16");
+	mvprintw(15,41,". . . ");
+	mvprintw(12,47," COMBINE THE");
+	mvprintw(13,47,"EQUAL NUMBERS");
+	attroff(A_BOLD);
+	mvprintw(14,52,"and");
+	attron(A_BOLD);
+	mvprintw(15,47," REACH 2048!!");
+	attroff(A_BOLD);
+	draw_box(7,40,11,23);
 	refresh();
 }
 int main() 
-{       
+{   
+	FILE *f;   
 	int actiune,continuare,pozitie=1,res=0;
 	int nfds, sel;
 	fd_set read_descriptors;
@@ -278,16 +548,37 @@ int main()
 	timeout.tv_sec = S_TO_WAIT;
 	timeout.tv_usec = MILIS_TO_WAIT;
 	continuare=1;
+	f=fopen("savegame","r");
+	fscanf(f,"%d",&res);
+	if(res==1)
+	{
+		int i,j;
+		for(i=1;i<=4;i++)
+			for(j=1;j<=4;j++)
+				fscanf(f,"%d",&a[i][j]);
+		for(i=1;i<=4;i++)
+			for(j=1;j<=4;j++)
+				fscanf(f,"%d",&prev[i][j]);
+		fscanf(f,"%d%d",&score,&prevscore);
+	}
 	initscr();
+	start_color();
 	cbreak();
 	noecho();
 	keypad(stdscr, TRUE);
-	start_color();
+	init_pair(1,COLOR_BLACK,COLOR_YELLOW);
+	init_pair(2,COLOR_BLACK,COLOR_RED);
+	init_pair(3,COLOR_BLACK,COLOR_GREEN);
+	init_pair(4,COLOR_BLACK,COLOR_MAGENTA);
+	init_pair(5,COLOR_BLACK,COLOR_CYAN);
+	init_pair(6,COLOR_BLACK,COLOR_BLUE);
+	init_pair(7,COLOR_BLUE,COLOR_YELLOW);
+	init_pair(8,COLOR_BLUE,COLOR_RED);
+	init_pair(9,COLOR_BLUE,COLOR_GREEN);
+	init_pair(10,COLOR_BLUE,COLOR_MAGENTA);
+	init_pair(11,COLOR_BLUE,COLOR_CYAN);
 	srand(time(NULL));
-	mvprintw(1,1,"-->");
-	mvprintw(1,4,"New Game");
-	mvprintw(2,4,"Resume*");
-	mvprintw(3,4,"Quit");
+	draw_menu(pozitie,res);
 	while(continuare==1)
 	{
 		actiune=getch();
@@ -296,8 +587,7 @@ int main()
 			if(pozitie>1)
 			{
 				pozitie--;
-				mvprintw(pozitie,1,"-->");
-				mvprintw(pozitie+1,1,"   ");
+				draw_menu(pozitie,res);
 			}
 		}
 		if(actiune==KEY_DOWN)
@@ -305,8 +595,7 @@ int main()
 			if(pozitie<3)
 			{
 				pozitie++;
-				mvprintw(pozitie,1,"-->");
-				mvprintw(pozitie-1,1,"   ");
+				draw_menu(pozitie,res);
 			}
 		}
 		if(actiune==ENTER)
@@ -315,15 +604,16 @@ int main()
 			{
 				int stadiu=1;
 				score=0;
+				prevscore=0;
 				clear();
 				init_matrice();
 				generare();
 				generare();
-				print_table();
-				mvprintw(0,24,"SCORE:");
-				mvprintw(1,24,"%d",score);
-				mvprintw(23,2,"USE THE ARROW KEYS TO MOVE THE TILES");
-				mvprintw(24,2,"PRESS Q TO EXIT THE GAME (YOU'LL BE ABLE TO RESUME IT, IF YOU WANT)");
+				print_table(score);
+				mvprintw(20,2,"USE THE ARROW KEYS TO MOVE THE TILES");
+				mvprintw(21,2,"PRESS Q TO EXIT THE GAME (YOU'LL BE ABLE TO RESUME IT, IF YOU WANT)");
+				mvprintw(22,2,"PRESS Z TO UNDO THE LAST MOVE (YOU CANNOT UNDO TWICE IN A ROW)");
+				copiere_matrice(prev);
 				refresh();
 				do
 				{
@@ -345,14 +635,24 @@ int main()
 									else
 										if(directie==KEY_RIGHT)
 											miscare_dreapta(1,&aux,&auxm);
-										else	
-											if(directie==113 || directie==81)
+										else
+											if(directie==122 || directie==90)
 											{
-												res=1;
-												goto Continue1;
-											}
-											else
+												int i,j;
+												for(i=1;i<=4;i++)
+													for(j=1;j<=4;j++)
+														a[i][j]=prev[i][j];
+												score=prevscore;
 												aux=0;
+											}
+											else	
+												if(directie==113 || directie==81)
+												{
+													res=1;
+													goto Continue1;
+												}
+												else
+													aux=0;
 							break;
 						case SELECT_NO_EVENT:
 							miscari1=0;miscari2=0;miscari3=0;miscari4=0;
@@ -363,26 +663,30 @@ int main()
 							if(aux1==1 && miscari1>=miscari2 && miscari1>=miscari3 && miscari1>=miscari4)
 								miscare_jos(1,&aux,&miscari1);
 							else
-								if(aux2==1 && miscari2>=miscari1 && miscari2>=miscari3 && miscari2>=miscari4)
-									miscare_sus(1,&aux,&miscari2);
+								if(aux4==1 && miscari4>=miscari1 && miscari4>=miscari2 && miscari4>=miscari3)
+									miscare_dreapta(1,&aux,&miscari4);
 								else
-									if(aux3==1 && miscari3>=miscari1 && miscari3>=miscari2 && miscari3>=miscari4)
-										miscare_stanga(1,&aux,&miscari3);
+									if(aux2==1 && miscari2>=miscari1 && miscari2>=miscari3 && miscari2>=miscari4)
+										miscare_sus(1,&aux,&miscari2);
 									else
-										if(aux4==1 && miscari4>=miscari1 && miscari4>=miscari2 && miscari4>=miscari3)
-											miscare_dreapta(1,&aux,&miscari4);
+										if(aux3==1 && miscari3>=miscari1 && miscari3>=miscari2 && miscari3>=miscari4)
+											miscare_stanga(1,&aux,&miscari3);
+									
+										
 							break;
 					}
 					if(aux==1)
 						generare();
-					print_table();
+					print_table(score);
 					if(check2048()==1)
 					{
-						mvprintw(21,2,"CONGRATULATIONS, YOU WON!");
+						mvprintw(20,2,"                                      ");
+						mvprintw(21,2,"                                                                   ");
+						mvprintw(19,2,"CONGRATULATIONS, YOU WON!");
+						mvprintw(20,2,"PRESS ANY KEY TO CONTINUE ...");
 						refresh();
 						stadiu=0;
 						res=0;
-						getch();
 						getch();
 					}
 					else
@@ -395,40 +699,51 @@ int main()
 						miscare_dreapta(0,&aux4,&auxm);
 						if(aux1+aux2+aux3+aux4==0)
 							{
-								mvprintw(21,2,"TOUGH LUCK, YOU ARE OUT OF MOVES!");
+								int z;
+								mvprintw(20,2,"                                      ");
+								mvprintw(21,2,"                                                                   ");
+								mvprintw(19,2,"TOUGH LUCK, YOU ARE OUT OF MOVES!");
+								mvprintw(20,2,"PRESS ANY KEY TO CONTINUE ...");
 								refresh();
-								stadiu=0;
-								res=0;
-								getch();
-								getch();
+								z=getch();
+								if(z==122 || z==90)
+								{
+									int i,j;
+									for(i=1;i<=4;i++)
+										for(j=1;j<=4;j++)
+											a[i][j]=prev[i][j];
+									score=prevscore;
+									mvprintw(19,2,"                                     ");
+									mvprintw(20,2,"USE THE ARROW KEYS TO MOVE THE TILES");
+									mvprintw(21,2,"PRESS Q TO EXIT THE GAME (YOU'LL BE ABLE TO RESUME IT, IF YOU WANT)");
+									mvprintw(22,2,"PRESS Z TO UNDO THE LAST MOVE (YOU CANNOT UNDO TWICE IN A ROW)");
+									print_table(score);
+									refresh();
+								}
+								else
+								{
+									stadiu=0;
+									res=0;
+								}
 							}
 					}
 					FD_SET(KEYBOARD, &read_descriptors);
 					timeout.tv_sec = S_TO_WAIT;
 					timeout.tv_usec = MILIS_TO_WAIT;
-					mvprintw(1,24,"%d",score);
 					refresh();
 				}
 				while(stadiu==1);
 				Continue1: ;
-				clear();
-				mvprintw(pozitie,1,"-->");
-				mvprintw(1,4,"New Game");
-				if(res==1)
-					mvprintw(2,4,"Resume");
-				else
-					mvprintw(2,4,"Resume*");
-				mvprintw(3,4,"Quit");
+				draw_menu(pozitie,res);
 			}
 			if(pozitie==2 && res==1)
 			{
 				int stadiu=1;
 				clear();
-				print_table();
-				mvprintw(0,24,"SCORE:");
-				mvprintw(1,24,"%d",score);
-				mvprintw(23,2,"USE THE ARROW KEYS TO MOVE THE TILES");
-				mvprintw(24,2,"PRESS Q TO EXIT THE GAME (YOU'LL BE ABLE TO RESUME IT, IF YOU WANT)");
+				print_table(score);
+				mvprintw(20,2,"USE THE ARROW KEYS TO MOVE THE TILES");
+				mvprintw(21,2,"PRESS Q TO EXIT THE GAME (YOU'LL BE ABLE TO RESUME IT, IF YOU WANT)");
+				mvprintw(22,2,"PRESS Z TO UNDO THE LAST MOVE (YOU CANNOT UNDO TWICE IN A ROW)");
 				refresh();
 				do
 				{
@@ -451,13 +766,23 @@ int main()
 										if(directie==KEY_RIGHT)
 											miscare_dreapta(1,&aux,&auxm);
 										else	
-											if(directie==113 || directie==81)
+											if(directie==122 || directie==90)
 											{
-												res=1;
-												goto Continue2;
-											}
-											else
+												int i,j;
+												for(i=1;i<=4;i++)
+													for(j=1;j<=4;j++)
+														a[i][j]=prev[i][j];
+												score=prevscore;
 												aux=0;
+											}
+											else	
+												if(directie==113 || directie==81)
+												{
+													res=1;
+													goto Continue2;
+												}
+												else
+													aux=0;
 							break;
 						case SELECT_NO_EVENT:
 							miscari1=0;miscari2=0;miscari3=0;miscari4=0;
@@ -480,14 +805,16 @@ int main()
 					}
 					if(aux==1)
 						generare();
-					print_table();
+					print_table(score);
 					if(check2048()==1)
 					{
-						mvprintw(21,2,"CONGRATULATIONS, YOU WON!");
+						mvprintw(20,2,"                                      ");
+						mvprintw(21,2,"                                                                   ");
+						mvprintw(19,2,"CONGRATULATIONS, YOU WON!");
+						mvprintw(20,2,"PRESS ANY KEY TO CONTINUE ...");
 						refresh();
 						stadiu=0;
 						res=0;
-						getch();
 						getch();
 					}
 					else
@@ -500,34 +827,67 @@ int main()
 						miscare_dreapta(0,&aux4,&auxm);
 						if(aux1+aux2+aux3+aux4==0)
 							{
-								mvprintw(21,2,"TOUGH LUCK, YOU ARE OUT OF MOVES!");
+								int z;
+								mvprintw(20,2,"                                      ");
+								mvprintw(21,2,"                                                                   ");
+								mvprintw(19,2,"TOUGH LUCK, YOU ARE OUT OF MOVES!");
+								mvprintw(20,2,"PRESS ANY KEY TO CONTINUE ...");
 								refresh();
-								stadiu=0;
-								res=0;
-								getch();
-								getch();
+								z=getch();
+								if(z==122 || z==90)
+								{
+									int i,j;
+									for(i=1;i<=4;i++)
+										for(j=1;j<=4;j++)
+											a[i][j]=prev[i][j];
+									score=prevscore;
+									mvprintw(19,2,"                                     ");
+									mvprintw(20,2,"USE THE ARROW KEYS TO MOVE THE TILES");
+									mvprintw(21,2,"PRESS Q TO EXIT THE GAME (YOU'LL BE ABLE TO RESUME IT, IF YOU WANT)");
+									mvprintw(22,2,"PRESS Z TO UNDO THE LAST MOVE (YOU CANNOT UNDO TWICE IN A ROW)");
+									print_table(score);
+									refresh();
+								}
+								else
+								{
+									stadiu=0;
+									res=0;
+								}
 							}
 					}
 					FD_SET(KEYBOARD, &read_descriptors);
 					timeout.tv_sec = S_TO_WAIT;
 					timeout.tv_usec = MILIS_TO_WAIT;
-					mvprintw(1,24,"%d",score);
 					refresh();
 				}
 				while(stadiu==1);
 				Continue2: ;
-				clear();
-				mvprintw(pozitie,1,"-->");
-				mvprintw(1,4,"New Game");
-				if(res==1)
-					mvprintw(2,4,"Resume");
-				else
-					mvprintw(2,4,"Resume*");
-				mvprintw(3,4,"Quit");
+				draw_menu(pozitie,res);
 			}
 			if(pozitie==3)
 			{
+				fclose(f);
 				continuare=0;
+				f=fopen("savegame","w");
+				fprintf(f,"%d\n",res);
+				if(res==1)
+				{
+					int i,j;
+					for(i=1;i<=4;i++)
+						{
+							for(j=1;j<=4;j++)
+								fprintf(f,"%d ",a[i][j]);
+							fprintf(f,"\n");
+						}
+					for(i=1;i<=4;i++)
+					{
+						for(j=1;j<=4;j++)
+							fprintf(f,"%d ",prev[i][j]);
+						fprintf(f,"\n");
+					}
+					fprintf(f,"%d %d\n",score,prevscore);
+				}
+				fclose(f);
 			}
 		}
 		refresh();
