@@ -91,10 +91,14 @@ void copiere_matrice(int loc[5][5])
 }
 void miscare_sus(int scop, int *rezultat, int *miscari)//scop=1 pentru mutare, 0 pentru evaluare
 {
-	int copie[5][5];
+	int copie[5][5],prevbak[5][5];
 	copiere_matrice(copie);
 	if(scop==1)
 		{
+		    int i,j;
+			for(i=1;i<=4;i++)
+				for(j=1;j<=4;j++)
+					prevbak[i][j]=prev[i][j];
 			copiere_matrice(prev);
 			prevscore=score;
 		}
@@ -128,6 +132,13 @@ void miscare_sus(int scop, int *rezultat, int *miscari)//scop=1 pentru mutare, 0
 		*(rezultat)=0;
 	else
 		*(rezultat)=1;
+	if(*(rezultat)==0 && scop==1)
+	{
+		int i,j;
+		for(i=1;i<=4;i++)
+			for(j=1;j<=4;j++)
+				prev[i][j]=prevbak[i][j];
+	}
 	if(scop==1)
 	{
 		int j;
@@ -139,10 +150,14 @@ void miscare_sus(int scop, int *rezultat, int *miscari)//scop=1 pentru mutare, 0
 }
 void miscare_stanga(int scop, int *rezultat, int *miscari)//1 pentru mutare, 0 pentru evaluare
 {
-	int copie[5][5];
+	int copie[5][5],prevbak[5][5];
 	copiere_matrice(copie);
 	if(scop==1)
 		{
+			int i,j;
+			for(i=1;i<=4;i++)
+				for(j=1;j<=4;j++)
+					prevbak[i][j]=prev[i][j];
 			copiere_matrice(prev);
 			prevscore=score;
 		}
@@ -176,6 +191,13 @@ void miscare_stanga(int scop, int *rezultat, int *miscari)//1 pentru mutare, 0 p
 		*(rezultat)=0;
 	else
 		*(rezultat)=1;
+	if(*(rezultat)==0 && scop==1)
+	{
+		int i,j;
+		for(i=1;i<=4;i++)
+			for(j=1;j<=4;j++)
+				prev[i][j]=prevbak[i][j];
+	}
 	if(scop==1)
 	{
 		int j;
@@ -188,10 +210,14 @@ void miscare_stanga(int scop, int *rezultat, int *miscari)//1 pentru mutare, 0 p
 }
 void miscare_jos(int scop, int *rezultat, int *miscari)//1 pentru mutare, 0 pentru evaluare
 {
-	int copie[5][5];
+	int copie[5][5],prevbak[5][5];
 	copiere_matrice(copie);
 	if(scop==1)
 		{
+		    int i,j;
+			for(i=1;i<=4;i++)
+				for(j=1;j<=4;j++)
+					prevbak[i][j]=prev[i][j];
 			copiere_matrice(prev);
 			prevscore=score;
 		}
@@ -225,6 +251,13 @@ void miscare_jos(int scop, int *rezultat, int *miscari)//1 pentru mutare, 0 pent
 		*(rezultat)=0;
 	else
 		*(rezultat)=1;
+	if(*(rezultat)==0 && scop==1)
+	{
+		int i,j;
+		for(i=1;i<=4;i++)
+			for(j=1;j<=4;j++)
+				prev[i][j]=prevbak[i][j];
+	}
 	if(scop==1)
 	{
 		int j;
@@ -236,10 +269,14 @@ void miscare_jos(int scop, int *rezultat, int *miscari)//1 pentru mutare, 0 pent
 }
 void miscare_dreapta(int scop, int *rezultat, int *miscari)//1 pentru mutare, 0 pentru evaluare
 {
-	int copie[5][5];
+	int copie[5][5],prevbak[5][5];
 	copiere_matrice(copie);
 	if(scop==1)
 		{
+		    int i,j;
+			for(i=1;i<=4;i++)
+				for(j=1;j<=4;j++)
+					prevbak[i][j]=prev[i][j];
 			copiere_matrice(prev);
 			prevscore=score;
 		}
@@ -273,6 +310,13 @@ void miscare_dreapta(int scop, int *rezultat, int *miscari)//1 pentru mutare, 0 
 		*(rezultat)=0;
 	else
 		*(rezultat)=1;
+	if(*(rezultat)==0 && scop==1)
+	{
+		int i,j;
+		for(i=1;i<=4;i++)
+			for(j=1;j<=4;j++)
+				prev[i][j]=prevbak[i][j];
+	}
 	if(scop==1)
 	{
 		int j;
