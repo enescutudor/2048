@@ -728,6 +728,7 @@ int main()
 						mvprintw(21,2,"                                                                   ");
 						mvprintw(19,2,"CONGRATULATIONS, YOU WON!");
 						mvprintw(20,2,"PRESS ANY KEY TO CONTINUE ...");
+						mvprintw(22,2,"                                                                ");
 						refresh();
 						stadiu=0;
 						res=0;
@@ -760,7 +761,6 @@ int main()
 									mvprintw(19,2,"                                     ");
 									mvprintw(20,2,"USE THE ARROW KEYS TO MOVE THE TILES");
 									mvprintw(21,2,"PRESS Q TO EXIT THE GAME (YOU'LL BE ABLE TO RESUME IT, IF YOU WANT)");
-									mvprintw(22,2,"PRESS Z TO UNDO THE LAST MOVE (YOU CANNOT UNDO TWICE IN A ROW)");
 									print_table(score);
 									refresh();
 								}
@@ -856,6 +856,7 @@ int main()
 						mvprintw(21,2,"                                                                   ");
 						mvprintw(19,2,"CONGRATULATIONS, YOU WON!");
 						mvprintw(20,2,"PRESS ANY KEY TO CONTINUE ...");
+						mvprintw(22,2,"                                                                ");
 						refresh();
 						stadiu=0;
 						res=0;
