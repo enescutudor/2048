@@ -509,9 +509,9 @@ void print_table(int score,int highscore)
 	mvprintw(6,35,"TIME:");
 	mvprintw(7,35,"%d:%d",tm.tm_hour,tm.tm_min);
 	draw_box(4,26,1,34);
-	draw_box(5,10,5,23);//hiscore
+	draw_box(4,10,5,23);//hiscore
 	mvprintw(6,24,"HISCORE:");
-	mvprintw(8,24,"%d",highscore);
+	mvprintw(7,24,"%d",highscore);
 	draw_box(4,8,5,34);
 	mvprintw(2,24,"SCORE:");
 	mvprintw(3,24,"%d",score);
@@ -793,6 +793,8 @@ int main()
 			{
 				int stadiu=1;
 				clear();
+				if(score>highscore)
+					highscore=score;
 				print_table(score,highscore);
 				mvprintw(20,2,"USE THE ARROW KEYS TO MOVE THE TILES");
 				mvprintw(21,2,"PRESS Q TO EXIT THE GAME (YOU'LL BE ABLE TO RESUME IT, IF YOU WANT)");
