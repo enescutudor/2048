@@ -494,7 +494,7 @@ void print_date(int year,int month, int day)
 				mvprintw(3,35,"%dth of %s, %d",day,mon,year);
 	free(mon);
 }
-void print_table(int score)
+void print_table(int score,int highscore)
 {
 	int i,j;
 	for(i=1;i<=4;i++)
@@ -509,10 +509,13 @@ void print_table(int score)
 	mvprintw(6,35,"TIME:");
 	mvprintw(7,35,"%d:%d",tm.tm_hour,tm.tm_min);
 	draw_box(4,26,1,34);
+	draw_box(5,10,5,23);//hiscore
+	mvprintw(6,24,"HISCORE:");
+	mvprintw(8,24,"%d",highscore);
 	draw_box(4,8,5,34);
 	mvprintw(2,24,"SCORE:");
 	mvprintw(3,24,"%d",score);
-	draw_box(4,9,1,23);
+	draw_box(4,10,1,23);//score
 	draw_box(24,71,0,0);
 	int aux1,aux2,aux3,aux4,aux;
 	miscare_jos(0,&aux1,&aux);
@@ -582,7 +585,7 @@ void print_table(int score)
 int main() 
 {   
 	FILE *f;   
-	int actiune,continuare,pozitie=1,res=0;
+	int actiune,continuare,pozitie=1,res=0,highscore=0;
 	int nfds, sel;
 	fd_set read_descriptors;
 	struct timeval timeout;
@@ -605,6 +608,7 @@ int main()
 				fscanf(f,"%d",&prev[i][j]);
 		fscanf(f,"%d%d",&score,&prevscore);
 	}
+	fscanf(f,"%d",&highscore);
 	initscr();
 	start_color();
 	cbreak();
@@ -654,7 +658,7 @@ int main()
 				init_matrice();
 				generare();
 				generare();
-				print_table(score);
+				print_table(score,highscore);
 				mvprintw(20,2,"USE THE ARROW KEYS TO MOVE THE TILES");
 				mvprintw(21,2,"PRESS Q TO EXIT THE GAME (YOU'LL BE ABLE TO RESUME IT, IF YOU WANT)");
 				mvprintw(22,2,"PRESS Z TO UNDO THE LAST MOVE (YOU CANNOT UNDO TWICE IN A ROW)");
@@ -722,7 +726,9 @@ int main()
 					}
 					if(aux==1)
 						generare();
-					print_table(score);
+					if(score>highscore)
+						highscore=score;
+					print_table(score,highscore);
 					if(check2048()==1)
 					{
 						mvprintw(20,2,"                                      ");
@@ -762,7 +768,9 @@ int main()
 									mvprintw(19,2,"                                     ");
 									mvprintw(20,2,"USE THE ARROW KEYS TO MOVE THE TILES");
 									mvprintw(21,2,"PRESS Q TO EXIT THE GAME (YOU'LL BE ABLE TO RESUME IT, IF YOU WANT)");
-									print_table(score);
+									if(score>highscore)
+										highscore=score;
+									print_table(score,highscore);
 									refresh();
 								}
 								else
@@ -785,7 +793,7 @@ int main()
 			{
 				int stadiu=1;
 				clear();
-				print_table(score);
+				print_table(score,highscore);
 				mvprintw(20,2,"USE THE ARROW KEYS TO MOVE THE TILES");
 				mvprintw(21,2,"PRESS Q TO EXIT THE GAME (YOU'LL BE ABLE TO RESUME IT, IF YOU WANT)");
 				mvprintw(22,2,"PRESS Z TO UNDO THE LAST MOVE (YOU CANNOT UNDO TWICE IN A ROW)");
@@ -850,7 +858,9 @@ int main()
 					}
 					if(aux==1)
 						generare();
-					print_table(score);
+					if(score>highscore)
+						highscore=score;
+					print_table(score,highscore);
 					if(check2048()==1)
 					{
 						mvprintw(20,2,"                                      ");
@@ -891,7 +901,9 @@ int main()
 									mvprintw(20,2,"USE THE ARROW KEYS TO MOVE THE TILES");
 									mvprintw(21,2,"PRESS Q TO EXIT THE GAME (YOU'LL BE ABLE TO RESUME IT, IF YOU WANT)");
 									mvprintw(22,2,"PRESS Z TO UNDO THE LAST MOVE (YOU CANNOT UNDO TWICE IN A ROW)");
-									print_table(score);
+									if(score>highscore)
+										highscore=score;
+									print_table(score,highscore);
 									refresh();
 								}
 								else
@@ -933,10 +945,12 @@ int main()
 					}
 					fprintf(f,"%d %d\n",score,prevscore);
 				}
+				fprintf(f,"%d",highscore);
 				fclose(f);
 			}
 		}
 		refresh();
 	}
-	endwin();      
+	endwin();
+	return 0;      
 } 
